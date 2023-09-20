@@ -19,4 +19,4 @@ Finally, if needed, export data from the data mart using the script `dml\export_
 ## Links
 
 - CSV data ```https://www.kaggle.com/competitions/h-and-m-personalized-fashion-recommendations/data```
-- Data mart ```https://drive.google.com/file/d/11sDTn0Y-fvpvf7r8dwFwLj-crpC3AMP5/view?usp=sharing```
+- Data mart ```https://drive.google.com/file/d/1kLVzy5R8CAL-lMg6vA9TJhmu3yms9oO2/view?usp=sharing```

@@ -83,10 +83,10 @@ select
     pd.most_active_decade,
     coalesce(rr.customer_loyalty, 0) 		 as customer_loyalty
 from customers cst
-	left join reduced_rows rr 	on cst.customer_id = rr.customer_id and
+	inner join reduced_rows rr 	 on cst.customer_id = rr.customer_id and
 								   rr.year_month = to_char(get_date(), 'yyyymm')
-	left join popular_decade pd on rr.customer_id = pd.customer_id 	and
-								   rr.year_month = pd.year_month 	and
+	inner join popular_decade pd on rr.customer_id = pd.customer_id  and
+								   rr.year_month = pd.year_month 	 and
 								   pd.rn = 1
 )
 to './data_mart.csv' delimiter ',' csv header;
