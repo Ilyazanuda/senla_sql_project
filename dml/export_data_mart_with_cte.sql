@@ -30,7 +30,8 @@ with base_items as (
 		end as most_active_decade,
         sum(price) as price,
         row_number() over (partition by customer_id,
-        								to_char(t_date, 'yyyymm') order by sum(price) desc,
+        								to_char(t_date, 'yyyymm') order by
+        								sum(price) desc,
 								        case
 									        when date_part('d', t_date) < 11 then 1
 								            when date_part('d', t_date) > 20 then 3
@@ -67,26 +68,29 @@ with base_items as (
 		  bi.year_month in (to_char(get_date(), 'yyyymm'),
 					        to_char(get_date() - interval '1 month', 'yyyymm'),
 					        to_char(get_date() - interval '2 month', 'yyyymm'))
+), all_customers as (
+	select
+	    get_date() 								 as part_date,
+	    cst.customer_id,
+	    case
+	        when cst.age < 23 then 'S'
+	        when cst.age > 59 then 'R'
+	        else 'A'
+	    end 									 as customer_group_by_age,
+	    coalesce(rr.transaction_amount, 0) 		 as transaction_amount,
+	    rr.most_exp_article_id,
+	    coalesce(rr.number_of_articles, 0) 		 as number_of_articles,
+	    coalesce(rr.number_of_product_groups, 0) as number_of_product_groups,
+	    pd.most_active_decade,
+	    coalesce(rr.customer_loyalty, 0) 		 as customer_loyalty
+	from customers cst
+		left join reduced_rows rr on cst.customer_id = rr.customer_id and
+									   rr.year_month = to_char(get_date(), 'yyyymm')
+		left join popular_decade pd on rr.customer_id = pd.customer_id  and
+									    rr.year_month = pd.year_month 	 and
+									    pd.rn = 1
 )
-select
-    get_date() 								 as part_date,
-    cst.customer_id,
-    case
-        when cst.age < 23 then 'S'
-        when cst.age > 59 then 'R'
-        else 'A'
-    end 									 as customer_group_by_age,
-    coalesce(rr.transaction_amount, 0) 		 as transaction_amount,
-    rr.most_exp_article_id,
-    coalesce(rr.number_of_articles, 0) 		 as number_of_articles,
-    coalesce(rr.number_of_product_groups, 0) as number_of_product_groups,
-    pd.most_active_decade,
-    coalesce(rr.customer_loyalty, 0) 		 as customer_loyalty
-from customers cst
-	inner join reduced_rows rr 	 on cst.customer_id = rr.customer_id and
-								   rr.year_month = to_char(get_date(), 'yyyymm')
-	inner join popular_decade pd on rr.customer_id = pd.customer_id  and
-								   rr.year_month = pd.year_month 	 and
-								   pd.rn = 1
-)
-to './data_mart.csv' delimiter ',' csv header;
+select *
+from all_customers
+where most_exp_article_id is not null
+) to './data_mart_with_cte.csv' delimiter ',' csv header;
